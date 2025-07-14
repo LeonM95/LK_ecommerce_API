@@ -12,6 +12,6 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         public required int? StatusId { get; set; }
 
         public required Product Product { get; set; }
-        public Status? Status { get; set; }
+        public required Status Status { get; set; }
     }
 }
