@@ -13,5 +13,9 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         public required string Description { get; set; }
         public required int RoleId { get; set; }
         public required int StatusId { get; set; }
+
+        public required Role Role { get; set; }
+
+        public required Status Status { get; set; }
     }
 }

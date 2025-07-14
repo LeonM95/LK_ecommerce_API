@@ -11,7 +11,7 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         public required decimal Price { get; set; }
         public required int Stock { get; set; }
         public required int CategoryId { get; set; }
-        public int? StatusId { get; set; }
+        public required int StatusId { get; set; }
 
         public required Category Category { get; set; }
         public required Status Status { get; set; }
