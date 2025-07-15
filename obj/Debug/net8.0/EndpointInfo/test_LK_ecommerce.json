@@ -5,6 +5,18 @@
     "version": "1.0"
   },
   "paths": {
+    "/api/Category": {
+      "get": {
+        "tags": [
+          "Category"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
     "/api/Role": {
       "get": {
         "tags": [
@@ -424,7 +436,9 @@
           "fullname",
           "password",
           "phoneNumber",
+          "role",
           "roleId",
+          "status",
           "statusId"
         ],
         "type": "object",
@@ -460,6 +474,12 @@
           "statusId": {
             "type": "integer",
             "format": "int32"
+          },
+          "role": {
+            "$ref": "#/components/schemas/Role"
+          },
+          "status": {
+            "$ref": "#/components/schemas/Status"
           }
         },
         "additionalProperties": false

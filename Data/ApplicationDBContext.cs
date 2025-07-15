@@ -24,7 +24,7 @@ namespace test_LK_ecommerce.Data
         public DbSet<SaleDetail> SaleDetail { get; set; }
         public DbSet<ShoppingCart> ShoppingCart { get; set; }
         public DbSet<Status> Status { get; set; }
-        public DbSet<Role> Roles { get; set; }
+        public DbSet<Users> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

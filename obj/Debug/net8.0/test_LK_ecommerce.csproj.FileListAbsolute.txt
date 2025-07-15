@@ -153,6 +153,7 @@ C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\test_LK_ecommerce.csproj.CoreCompileInputs.cache
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\test_LK_ecommerce.MvcApplicationPartsAssemblyInfo.cs
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\test_LK_ecommerce.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\test_LK_ecommerce.sourcelink.json
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\scopedcss\bundle\test_LK_ecommerce.styles.css
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\staticwebassets.build.json
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\staticwebassets.development.json
@@ -163,10 +164,10 @@ C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\staticwebassets\msbuild.buildMultiTargeting.test_LK_ecommerce.props
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\staticwebassets\msbuild.buildTransitive.test_LK_ecommerce.props
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\staticwebassets.pack.json
+C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\test_LK_.DA836BD9.Up2Date
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\test_LK_ecommerce.dll
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\refint\test_LK_ecommerce.dll
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\test_LK_ecommerce.pdb
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\test_LK_ecommerce.genruntimeconfig.cache
 C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\ref\test_LK_ecommerce.dll
-C:\Users\Usuario\Documents\C#\test_LK_ecommerce\test_LK_ecommerce\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
