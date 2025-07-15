@@ -23,7 +23,7 @@ namespace test_LK_ecommerce.Controllers
         [HttpGet]
         public async Task<IActionResult> GetRoles()
         {
-            var roles = await dBContext.Roles.ToListAsync();
+            var roles = await dBContext.Role.ToListAsync();
             return Ok(roles);
         }
 
@@ -31,7 +31,7 @@ namespace test_LK_ecommerce.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetRoleById(int id)
         {
-            var role = await dBContext.Roles.FindAsync(id);
+            var role = await dBContext.Role.FindAsync(id);
             if (role == null)
                 return NotFound();
 
@@ -42,7 +42,7 @@ namespace test_LK_ecommerce.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRole([FromBody] Role role)
         {
-            dBContext.Roles.Add(role);
+            dBContext.Role.Add(role);
             await dBContext.SaveChangesAsync();
 
             // Creates a new role and returns a 201 response with a link to view it.
@@ -53,7 +53,7 @@ namespace test_LK_ecommerce.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateRole(int id, [FromBody] Role updatedRole)
         {
-            var role = await dBContext.Roles.FindAsync(id);
+            var role = await dBContext.Role.FindAsync(id);
             if (role == null)
                 return NotFound();
 
@@ -67,11 +67,11 @@ namespace test_LK_ecommerce.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteRole(int id)
         {
-            var role = await dBContext.Roles.FindAsync(id);
+            var role = await dBContext.Role.FindAsync(id);
             if (role == null)
                 return NotFound();
 
-            dBContext.Roles.Remove(role);
+            dBContext.Role.Remove(role);
             await dBContext.SaveChangesAsync();
 
             return Ok(new { message = $"Role with ID {id} has been deleted." });

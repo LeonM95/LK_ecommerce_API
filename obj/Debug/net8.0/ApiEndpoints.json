@@ -1,5 +1,15 @@
 [
   {
+    "ContainingType": "test_LK_ecommerce.Controllers.CategoryController",
+    "Method": "GetCategories",
+    "RelativePath": "api/Category",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
     "ContainingType": "test_LK_ecommerce.Controllers.RoleController",
     "Method": "GetRoles",
     "RelativePath": "api/Role",
