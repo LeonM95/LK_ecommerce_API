@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using test_LK_ecommerce.Data;
 
@@ -11,9 +12,11 @@ using test_LK_ecommerce.Data;
 namespace test_LK_ecommerce.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250720004944_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -224,16 +227,11 @@ namespace test_LK_ecommerce.Migrations
                         .HasColumnType("int")
                         .HasColumnName("stock");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("ProductId");
 
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("StatusId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Products", (string)null);
                 });
@@ -453,6 +451,9 @@ namespace test_LK_ecommerce.Migrations
                         .HasColumnType("int")
                         .HasColumnName("roleId");
 
+                    b.Property<int?>("RoleId1")
+                        .HasColumnType("int");
+
                     b.Property<int>("StatusId")
                         .HasColumnType("int")
                         .HasColumnName("statusId");
@@ -460,6 +461,8 @@ namespace test_LK_ecommerce.Migrations
                     b.HasKey("UserId");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("RoleId1");
 
                     b.HasIndex("StatusId");
 
@@ -557,17 +560,9 @@ namespace test_LK_ecommerce.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.Users", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Category");
 
                     b.Navigation("Status");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("test_LK_ecommerce.Controllers.Models.Entities.Review", b =>
@@ -663,6 +658,10 @@ namespace test_LK_ecommerce.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.Role", null)
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId1");
+
                     b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.Status", "Status")
                         .WithMany()
                         .HasForeignKey("StatusId")
@@ -672,6 +671,11 @@ namespace test_LK_ecommerce.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("Status");
+                });
+
+            modelBuilder.Entity("test_LK_ecommerce.Controllers.Models.Entities.Role", b =>
+                {
+                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }
