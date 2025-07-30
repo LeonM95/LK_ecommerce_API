@@ -36,10 +36,30 @@ namespace test_LK_ecommerce.Controllers
             return Ok(user);
         }
 
+
+        // to search/get a user by name
+        [HttpGet("search/{name}")]
+        public async Task<IActionResult> GetUsersByName(string name)
+        {
+            var lowerCaseName = name.ToLower();
+
+
+            var users = await dBContext.Users.
+                Where(u => u.Fullname.ToLower().Contains(lowerCaseName)).ToListAsync();
+
+                return Ok(users); 
+        }
+
         // to create a user
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] Users user)
         {
+            // to avoid creating a new role and user
+            if (user.Role != null)
+                dBContext.Entry(user.Role).State = EntityState.Unchanged;
+            if (user.Status != null)
+                dBContext.Entry(user.Status).State = EntityState.Unchanged;
+
             dBContext.Users.Add(user);
             await dBContext.SaveChangesAsync();
 
@@ -58,7 +78,6 @@ namespace test_LK_ecommerce.Controllers
             user.Email = updatedUser.Email;
             user.PhoneNumber = updatedUser.PhoneNumber;
             user.Description = updatedUser.Description;
-            // Add other properties as needed (e.g., Email, RoleId, etc.)
 
             await dBContext.SaveChangesAsync();
 

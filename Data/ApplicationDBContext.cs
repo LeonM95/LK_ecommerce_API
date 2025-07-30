@@ -68,6 +68,7 @@ namespace test_LK_ecommerce.Data
                 .WithMany()  // or .WithMany(s => s.Users) if Status has Users collection navigation property
                 .HasForeignKey(u => u.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
+            base.OnModelCreating(modelBuilder);
 
 
             // address
@@ -93,6 +94,7 @@ namespace test_LK_ecommerce.Data
                 .WithMany() 
                 .HasForeignKey(a => a.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
+            
 
             // cartProducts
             // cartProducts

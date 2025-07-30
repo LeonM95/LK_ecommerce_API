@@ -1,4 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace test_LK_ecommerce.Controllers.Models.Entities
 {
@@ -12,7 +14,12 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         public required int SaleId { get; set; }
         public required int ProductId { get; set; }
 
+        [ForeignKey("SaleId")]
+        [JsonIgnore]
         public required Sale Sale { get; set; }
+
+        [ForeignKey("ProductId")]
+        [JsonIgnore]
         public required Product Product { get; set; }
     }
 }
