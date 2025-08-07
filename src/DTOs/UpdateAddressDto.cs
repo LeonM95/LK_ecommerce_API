@@ -15,7 +15,5 @@ namespace test_LK_ecommerce.DTOs
 
         [StringLength(50)]
         public string? Country { get; set; }
-
-        public int? StatusId { get; set; }
     }
 }
