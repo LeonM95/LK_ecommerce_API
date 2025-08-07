@@ -6,6 +6,6 @@ namespace src.DTOs
     {
         [Required]
         [StringLength(50)]
-        public string RoleName { get; set; }
+        public string? RoleName { get; set; }
     }
 }

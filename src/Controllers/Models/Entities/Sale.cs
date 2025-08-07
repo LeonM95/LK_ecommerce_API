@@ -13,23 +13,22 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         public required decimal Total { get; set; }
         public required int PaymentMethodId { get; set; }
         public required int StatusId { get; set; }
-        public required int ProductId { get; set; }
         public required int AddressId { get; set; }
+        public required int UserId { get; set; } // Add this foreign key
 
+        // Foreign Key Navigation Properties
         [ForeignKey("PaymentMethodId")]
-        [JsonIgnore]
         public required PaymentMethod PaymentMethod { get; set; }
 
         [ForeignKey("StatusId")]
-        [JsonIgnore]
         public required Status Status { get; set; }
 
-        [ForeignKey("ProductId")]
-        [JsonIgnore]
-        public required Product Product { get; set; }
-
         [ForeignKey("AddressId")]
-        [JsonIgnore]
         public required Address Address { get; set; }
+
+        [ForeignKey("UserId")] 
+        public Users? Users { get; set; } 
+
+        public ICollection<SaleDetail> SaleDetails { get; set; } = new List<SaleDetail>();
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using test_LK_ecommerce.Data;
 
@@ -11,9 +12,11 @@ using test_LK_ecommerce.Data;
 namespace src.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250805180414_AddSaleAndCartRelationships")]
+    partial class AddSaleAndCartRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -93,6 +96,9 @@ namespace src.Migrations
                         .HasColumnType("int")
                         .HasColumnName("quantity");
 
+                    b.Property<int?>("ShoppingCartCartId")
+                        .HasColumnType("int");
+
                     b.Property<int>("StatusId")
                         .HasColumnType("int")
                         .HasColumnName("statusId");
@@ -102,6 +108,8 @@ namespace src.Migrations
                     b.HasIndex("CartId");
 
                     b.HasIndex("ProductId");
+
+                    b.HasIndex("ShoppingCartCartId");
 
                     b.HasIndex("StatusId");
 
@@ -261,17 +269,12 @@ namespace src.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("review");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ReviewId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("StatusId");
 
                     b.HasIndex("UserId");
 
@@ -508,7 +511,7 @@ namespace src.Migrations
             modelBuilder.Entity("test_LK_ecommerce.Controllers.Models.Entities.CartProduct", b =>
                 {
                     b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.ShoppingCart", "ShoppingCart")
-                        .WithMany("CartProducts")
+                        .WithMany()
                         .HasForeignKey("CartId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -519,6 +522,10 @@ namespace src.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_PRODUCTSId");
+
+                    b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.ShoppingCart", null)
+                        .WithMany("CartProducts")
+                        .HasForeignKey("ShoppingCartCartId");
 
                     b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.Status", "Status")
                         .WithMany()
@@ -598,12 +605,6 @@ namespace src.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.Users", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -611,8 +612,6 @@ namespace src.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-
-                    b.Navigation("Status");
 
                     b.Navigation("User");
                 });

@@ -22,39 +22,36 @@ namespace test_LK_ecommerce.Controllers
         }
 
         // to get a list of all products by user ID
-        [HttpGet]
+        [HttpGet("user/{userId:int}")]
         public async Task<IActionResult> GetAllProductsByUser(int userId)
         {
             var products = await dBContext.Product
-                .Include(p => p.Category) // include related data for mapping
-                .Include(p => p.Status).// include related data for mapping
-                 Where(p => p.UserId == userId)
+                .Include(p => p.Category)
+                .Include(p => p.Status)
+                .Where(p => p.UserId == userId)
                 .ToListAsync();
 
             var productDtos = _mapper.Map<IEnumerable<ProductDto>>(products);
             return Ok(productDtos);
         }
 
-
-        // to search a list of all that container a search term
+        // to search a list of all that contain a search term
         [HttpGet("search")]
         public async Task<IActionResult> SearchProductsByName([FromQuery] string name)
         {
-            // to validate that the search term is not empty
             if (string.IsNullOrWhiteSpace(name))
             {
                 return BadRequest("Search term is empty.");
             }
 
-            var searchTerm = name.ToLower(); 
+            var searchTerm = name.ToLower();
 
             var products = await dBContext.Product
                 .Include(p => p.Category)
                 .Include(p => p.Status)
-                .Where(p => p.ProductName.ToLower().Contains(searchTerm)) // the search logic
+                .Where(p => p.ProductName.ToLower().Contains(searchTerm))
                 .ToListAsync();
 
-            // it's standard to return an empty list if no results are found
             var productDtos = _mapper.Map<IEnumerable<ProductDto>>(products);
             return Ok(productDtos);
         }
@@ -83,6 +80,9 @@ namespace test_LK_ecommerce.Controllers
         {
             var product = _mapper.Map<Product>(productDto);
 
+            // to set default status
+            product.StatusId = 1; // Active
+
             await dBContext.Product.AddAsync(product);
             await dBContext.SaveChangesAsync();
 
@@ -105,10 +105,10 @@ namespace test_LK_ecommerce.Controllers
             _mapper.Map(productDto, product);
             await dBContext.SaveChangesAsync();
 
-            return NoContent(); // return 204 No Content for a successful update
+            return NoContent();
         }
 
-        // to delete a product
+        // to mark product as inactive 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
@@ -119,10 +119,14 @@ namespace test_LK_ecommerce.Controllers
                 return NotFound();
             }
 
-            dBContext.Product.Remove(product);
+            product.StatusId = 3; // 3 for  "Deleted" status
+
             await dBContext.SaveChangesAsync();
 
-            return NoContent(); // return 204 No Content for a successful delete
+            return NoContent();
         }
+
+
+  
     }
 }

@@ -15,6 +15,8 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         public int UserId { get; set; }
         public required int ProductId { get; set; }
 
+        public required int StatusId { get; set; }
+
         [ForeignKey("ProductId")]
         [JsonIgnore]
         public required Product Product { get; set; }
@@ -22,5 +24,9 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         [ForeignKey("UserId")]
         [JsonIgnore]
         public required Users User { get; set; }
+
+        [ForeignKey("StatusId")] 
+        [JsonIgnore]
+        public Status? Status { get; set; } 
     }
 }

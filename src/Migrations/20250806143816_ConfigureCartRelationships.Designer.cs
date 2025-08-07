@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using test_LK_ecommerce.Data;
 
@@ -11,9 +12,11 @@ using test_LK_ecommerce.Data;
 namespace src.Migrations
 {
     [DbContext(typeof(ApplicationDBContext))]
-    partial class ApplicationDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250806143816_ConfigureCartRelationships")]
+    partial class ConfigureCartRelationships
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -261,17 +264,12 @@ namespace src.Migrations
                         .HasColumnType("nvarchar(max)")
                         .HasColumnName("review");
 
-                    b.Property<int>("StatusId")
-                        .HasColumnType("int");
-
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("ReviewId");
 
                     b.HasIndex("ProductId");
-
-                    b.HasIndex("StatusId");
 
                     b.HasIndex("UserId");
 
@@ -598,12 +596,6 @@ namespace src.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.Status", "Status")
-                        .WithMany()
-                        .HasForeignKey("StatusId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("test_LK_ecommerce.Controllers.Models.Entities.Users", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
@@ -611,8 +603,6 @@ namespace src.Migrations
                         .IsRequired();
 
                     b.Navigation("Product");
-
-                    b.Navigation("Status");
 
                     b.Navigation("User");
                 });

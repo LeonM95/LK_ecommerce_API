@@ -1,87 +1,96 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using src.DTOs;
+using src.Utils;
 using test_LK_ecommerce.Controllers.Models.Entities;
 using test_LK_ecommerce.Data;
+using test_LK_ecommerce.DTOs;
 
 namespace test_LK_ecommerce.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UserController : Controller
+    public class UserController : ControllerBase // use ControllerBase for APIs
     {
         private readonly ApplicationDBContext dBContext;
+        private readonly IMapper _mapper; // to use AutoMapper
 
         // to initialize controller
-        public UserController(ApplicationDBContext dBContext)
+        public UserController(ApplicationDBContext dBContext, IMapper mapper)
         {
             this.dBContext = dBContext;
+            _mapper = mapper;
         }
 
-        // to get list of all users
+        // to get list of all users as DTOs
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await dBContext.Users.ToListAsync();
-            return Ok(users);
+            var users = await dBContext.Users
+                .Include(u => u.Role)   // include Role for mapping RoleName
+                .Include(u => u.Status) // include Status for mapping StatusName
+                .ToListAsync();
+
+            var userDtos = _mapper.Map<IEnumerable<UserDto>>(users);
+            return Ok(userDtos);
         }
 
-        // to search/get a user by Id
-        [HttpGet("{id:int}")]
+        // to get a user by Id 
+        [HttpGet("{id:int}", Name = "GetUserById")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var user = await dBContext.Users.FindAsync(id);
+            var user = await dBContext.Users
+                .Include(u => u.Role)
+                .Include(u => u.Status)
+                .FirstOrDefaultAsync(u => u.UserId == id);
+
             if (user == null)
+            {
                 return NotFound();
+            }
 
-            return Ok(user);
+            var userDto = _mapper.Map<UserDto>(user);
+            return Ok(userDto);
         }
 
-
-        // to search/get a user by name
-        [HttpGet("search/{name}")]
-        public async Task<IActionResult> GetUsersByName(string name)
-        {
-            var lowerCaseName = name.ToLower();
-
-
-            var users = await dBContext.Users.
-                Where(u => u.Fullname.ToLower().Contains(lowerCaseName)).ToListAsync();
-
-                return Ok(users); 
-        }
-
-        // to create a user
+        // to create a user from a DTO
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] Users user)
+        public async Task<IActionResult> CreateUser([FromBody] CreateUserDto userDto)
         {
-            // to avoid creating a new role and user
-            if (user.Role != null)
-                dBContext.Entry(user.Role).State = EntityState.Unchanged;
-            if (user.Status != null)
-                dBContext.Entry(user.Status).State = EntityState.Unchanged;
+            var user = _mapper.Map<Users>(userDto);
 
-            dBContext.Users.Add(user);
+            // to hash the password before saving (never save plain text)
+
+            user.Password = PasswordHasher.Hash(userDto.Password!);
+
+            // to set default values on the server for security
+            user.RoleId = 2; // Default to "Vendor" or "Buyer"
+            user.StatusId = 1; // Default to "Active"
+
+            await dBContext.Users.AddAsync(user);
             await dBContext.SaveChangesAsync();
 
-            return Ok(user);
+            var createdUserDto = _mapper.Map<UserDto>(user);
+
+            return CreatedAtRoute("GetUserById", new { id = user.UserId }, createdUserDto);
         }
 
-        // to modify a user
+        // to modify a user's profile data from a DTO
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] Users updatedUser)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto userDto)
         {
             var user = await dBContext.Users.FindAsync(id);
             if (user == null)
+            {
                 return NotFound();
+            }
 
-            user.Fullname = updatedUser.Fullname;
-            user.Email = updatedUser.Email;
-            user.PhoneNumber = updatedUser.PhoneNumber;
-            user.Description = updatedUser.Description;
-
+            // to update only the fields allowed by the DTO
+            _mapper.Map(userDto, user);
             await dBContext.SaveChangesAsync();
 
-            return Ok(user);
+            return NoContent();
         }
 
         // to delete a user
@@ -90,12 +99,14 @@ namespace test_LK_ecommerce.Controllers
         {
             var user = await dBContext.Users.FindAsync(id);
             if (user == null)
+            {
                 return NotFound();
+            }
 
             dBContext.Users.Remove(user);
             await dBContext.SaveChangesAsync();
 
-            return Ok(new { message = $"User with ID {id} has been deleted." });
+            return NoContent();
         }
     }
 }

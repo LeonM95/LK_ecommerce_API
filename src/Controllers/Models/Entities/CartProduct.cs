@@ -12,18 +12,18 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         public required int Quantity { get; set; }
         public DateTime? AddedDate { get; set; }
 
-        public required int CartId { get; set; }
-        public required int ProductId { get; set; }
-        public required int StatusId { get; set; }
+        public int CartId { get; set; }
+        public int ProductId { get; set; }
+        public int StatusId { get; set; }
 
-        public required ShoppingCart ShoppingCart { get; set; }
+        public ShoppingCart? ShoppingCart { get; set; }
 
         [ForeignKey("ProductId")]
         [JsonIgnore]
-        public required Product Product { get; set; }
+        public Product? Product { get; set; }
 
         [ForeignKey("StatusId")]
         [JsonIgnore]
-        public required Status Status { get; set; }
+        public  Status? Status { get; set; }
     }
 }

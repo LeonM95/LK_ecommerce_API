@@ -219,19 +219,12 @@ namespace test_LK_ecommerce.Data
             modelBuilder.Entity<Sale>().Property(s => s.Total).HasColumnName("total");
             modelBuilder.Entity<Sale>().Property(s => s.PaymentMethodId).HasColumnName("paymentMethodId");
             modelBuilder.Entity<Sale>().Property(s => s.StatusId).HasColumnName("statusId");
-            modelBuilder.Entity<Sale>().Property(s => s.ProductId).HasColumnName("productId");
             modelBuilder.Entity<Sale>().Property(s => s.AddressId).HasColumnName("AddressId");
             // FK Sale - PaymentMethod
             modelBuilder.Entity<Sale>()
                 .HasOne(s => s.PaymentMethod)
                 .WithMany() 
                 .HasForeignKey(s => s.PaymentMethodId)
-                .OnDelete(DeleteBehavior.Restrict);
-            // FK Sale - Product
-            modelBuilder.Entity<Sale>()
-                .HasOne(s => s.Product)
-                .WithMany()
-                .HasForeignKey(s => s.ProductId)
                 .OnDelete(DeleteBehavior.Restrict);
             // FK Sale - Status
             modelBuilder.Entity<Sale>()
@@ -292,6 +285,11 @@ namespace test_LK_ecommerce.Data
                 .WithMany() 
                 .HasForeignKey(c => c.StatusId)
                 .OnDelete(DeleteBehavior.Restrict);
+            // FK - ShoppingCart - Cart
+            modelBuilder.Entity<ShoppingCart>()
+                .HasMany(sc => sc.CartProducts)       
+                .WithOne(cp => cp.ShoppingCart)     
+                .HasForeignKey(cp => cp.CartId);     
 
         }
     }

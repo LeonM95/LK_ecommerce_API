@@ -8,7 +8,7 @@ namespace test_LK_ecommerce.DTOs
         public int Quantity { get; set; }
 
         [Required]
-        public int CartId { get; set; }
+        public int UserId { get; set; }
 
         [Required]
         public int ProductId { get; set; }
