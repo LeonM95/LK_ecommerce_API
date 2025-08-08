@@ -2,9 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.DTOs;
-using test_LK_ecommerce.Controllers.Models.Entities;
-using test_LK_ecommerce.Data;
-using test_LK_ecommerce.DTOs;
+using src.Controllers.Models.Entities;
+using src.Data;
 
 namespace src.Controllers
 {

@@ -1,11 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using test_LK_ecommerce.Data;
-using test_LK_ecommerce.DTOs;
-using test_LK_ecommerce.Controllers.Models.Entities;
+using src.Data;
+using src.DTOs;
+using src.Controllers.Models.Entities;
 
-namespace test_LK_ecommerce.Controllers
+namespace src.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

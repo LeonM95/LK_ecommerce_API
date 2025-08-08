@@ -1,4 +1,4 @@
-﻿namespace test_LK_ecommerce.DTOs
+﻿namespace src.DTOs
 {
     using System.ComponentModel.DataAnnotations;
 

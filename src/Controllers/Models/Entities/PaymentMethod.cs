@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace test_LK_ecommerce.Controllers.Models.Entities
+namespace src.Controllers.Models.Entities
 {
     public class PaymentMethod
     {

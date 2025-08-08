@@ -3,9 +3,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.DTOs;
-using test_LK_ecommerce.Controllers.Models.Entities;
-using test_LK_ecommerce.Data;
-using test_LK_ecommerce.DTOs;
+using src.Controllers.Models.Entities;
+using src.Data;
 
 
 
@@ -114,7 +113,10 @@ namespace src.Controllers
             }
 
             // to update the quantity from the DTO
-            cartItem.Quantity = updateDto.Quantity.Value;
+            if (updateDto.Quantity.HasValue)
+            {
+                cartItem.Quantity = updateDto.Quantity.Value;
+            }
 
             // to find the parent cart and update its timestamp
             var cart = await dBContext.ShoppingCart.FindAsync(cartItem.CartId);

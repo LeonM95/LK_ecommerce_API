@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
-using test_LK_ecommerce.Controllers.Models.Entities;
+using src.Controllers.Models.Entities;
 
-namespace test_LK_ecommerce.DTOs
+namespace src.DTOs
 {
     public class CartProductDto
     {

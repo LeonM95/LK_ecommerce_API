@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
 using src.DTOs;
-using test_LK_ecommerce.Controllers.Models.Entities;
-using test_LK_ecommerce.DTOs;
-
-namespace test_LK_ecommerce
+using src.Controllers.Models.Entities;
+namespace src
 {
     public class MappingProfile : Profile
     {

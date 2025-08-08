@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using test_LK_ecommerce.Controllers.Models.Entities;
-using test_LK_ecommerce.Data;
-using test_LK_ecommerce.DTOs;
+using src.Controllers.Models.Entities;
+using src.Data;
+using src.DTOs;
 
 namespace src.Controllers
 {
