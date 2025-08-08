@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace test_LK_ecommerce.Controllers.Models.Entities
+namespace src.Controllers.Models.Entities
 {
     public class Users
     {
@@ -22,6 +22,9 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
 
         [ForeignKey("StatusId")]
         [JsonIgnore]   
-        public Status? Status { get; set; } 
+        public Status? Status { get; set; }
+
+        public ICollection<Address> Addresses { get; set; } = new List<Address>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }

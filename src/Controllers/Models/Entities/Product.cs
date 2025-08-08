@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace test_LK_ecommerce.Controllers.Models.Entities
+namespace src.Controllers.Models.Entities
 {
     public class Product
     {
@@ -27,5 +27,9 @@ namespace test_LK_ecommerce.Controllers.Models.Entities
         [ForeignKey("UserId")]
         [JsonIgnore]
         public Users? User { get; set; }
+
+        public ICollection<Image> Images { get; set; } = new List<Image>();
+        public ICollection<Review> Reviews { get; set; } = new List<Review>();
     }
 }
+

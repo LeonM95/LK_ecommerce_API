@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
 using System.Text.Json.Serialization;
 
-namespace test_LK_ecommerce.Controllers.Models.Entities
+namespace src.Controllers.Models.Entities
 {
     public class Sale
     {

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace test_LK_ecommerce.DTOs
+namespace src.DTOs
 {
     public class CreateCategoryDto
     {

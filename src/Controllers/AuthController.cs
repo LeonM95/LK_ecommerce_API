@@ -6,11 +6,11 @@ using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using test_LK_ecommerce.Controllers.Models.Entities;
-using test_LK_ecommerce.Data;
+using src.Controllers.Models.Entities;
+using src.Data;
 
 
-namespace test_LK_ecommerce.Controllers
+namespace src.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
