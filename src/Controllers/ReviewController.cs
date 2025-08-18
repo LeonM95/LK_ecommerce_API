@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using src.DTOs;
-using src.Controllers.Models.Entities;
 using src.Data;
+using src.DTOs;
+using src.Models.Entities;
+using src.Services;
 
 namespace src.Controllers
 {
@@ -11,103 +12,63 @@ namespace src.Controllers
     [ApiController]
     public class ReviewController : ControllerBase
     {
-        private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper;
+        private readonly IReviewService _reviewService;
 
-        // to initialize controller
-        public ReviewController(ApplicationDBContext dBContext, IMapper mapper)
+        // to initialize the controller with the review service
+        public ReviewController(IReviewService reviewService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _reviewService = reviewService;
         }
 
-
-        // to get a list of all reviews of a product ID
+        // to get a list of all reviews for a product
         [HttpGet("product/{productId:int}")]
-        public async Task<IActionResult> GetAllReviewsOfProduct(int productId)
+        public async Task<IActionResult> GetAllReviewsForProduct(int productId)
         {
-            var review = await dBContext.Review
-                .Include(r => r.User)
-                .Include(r => r.Product)
-                .Where(r => r.ProductId == productId)
-                .ToListAsync();
-
-            var reviewDto = _mapper.Map<IEnumerable<ReviewDto>>(review);
-            return Ok(reviewDto);
+            var reviews = await _reviewService.GetAllReviewsForProductAsync(productId);
+            return Ok(reviews);
         }
 
-        // to get a list of all reviews of a product ID
-        [HttpGet("review/{reviewId:int}")]
+        // to get a review by its Id
+        [HttpGet("{reviewId:int}", Name = "GetReviewById")]
         public async Task<IActionResult> GetReviewById(int reviewId)
         {
-            var review = await dBContext.Review
-                .Include(r => r.User)
-                .Include(r => r.Product)
-                .FirstOrDefaultAsync(r => r.ReviewId == reviewId);
-
-            // to check if the review exists
+            var review = await _reviewService.GetReviewByIdAsync(reviewId);
             if (review == null)
             {
-                return NotFound(); // Return 404 if not found
+                return NotFound();
             }
-
-            var reviewDto = _mapper.Map<ReviewDto>(review);
-            return Ok(reviewDto);
+            return Ok(review);
         }
-
 
         // to create a review
         [HttpPost]
         public async Task<IActionResult> CreateReview([FromBody] CreateReviewDto reviewDto)
         {
-            var review = _mapper.Map<Review>(reviewDto);
-
-            // to set the review date on the server
-            review.ReviewDate = DateTime.UtcNow;
-            review.StatusId = 1; // Active
-
-            await dBContext.Review.AddAsync(review);
-            await dBContext.SaveChangesAsync();
-
-            var createReviewDto  = _mapper.Map<ReviewDto>(review);
-
-            return CreatedAtAction(nameof(GetReviewById), new { reviewId = review.ReviewId },
-                createReviewDto);
+            var newReview = await _reviewService.CreateReviewAsync(reviewDto);
+            return CreatedAtAction(nameof(GetReviewById), new { reviewId = newReview.ReviewId }, newReview);
         }
 
-        // to update a Review from a DTO
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateReview(int id, [FromBody] UpdateReviewDto reviewDto)
+        // to update a review
+        [HttpPatch("{reviewId:int}")]
+        public async Task<IActionResult> UpdateReview(int reviewId, [FromBody] UpdateReviewDto reviewDto)
         {
-            var review = await dBContext.Review.FindAsync(id);
-
-            if (review == null)
+            var success = await _reviewService.UpdateReviewAsync(reviewId, reviewDto);
+            if (!success)
             {
                 return NotFound();
             }
-
-            _mapper.Map(reviewDto, review);
-            await dBContext.SaveChangesAsync();
-
             return NoContent();
         }
 
-
-        // to mark review as removed 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteReview(int id)
+        // to delete a review
+        [HttpDelete("{reviewId:int}")]
+        public async Task<IActionResult> DeleteReview(int reviewId)
         {
-            var review = await dBContext.Review.FindAsync(id);
-
-            if (review == null)
+            var success = await _reviewService.DeleteReviewAsync(reviewId);
+            if (!success)
             {
                 return NotFound();
             }
-
-            review.StatusId = 3; // 3 for  "Deleted" status
-
-            await dBContext.SaveChangesAsync();
-
             return NoContent();
         }
     }

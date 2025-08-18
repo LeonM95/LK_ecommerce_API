@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace src.Controllers.Models.Entities
+namespace src.Models.Entities
 {
     public class Users
     {
@@ -26,5 +26,8 @@ namespace src.Controllers.Models.Entities
 
         public ICollection<Address> Addresses { get; set; } = new List<Address>();
         public ICollection<Review> Reviews { get; set; } = new List<Review>();
+        public ICollection<Product> Products { get; set; } = new List<Product>();
+        public ICollection<ShoppingCart> ShoppingCarts { get; set; } = new List<ShoppingCart>();
+
     }
 }

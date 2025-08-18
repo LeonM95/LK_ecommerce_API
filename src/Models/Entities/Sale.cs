@@ -2,8 +2,9 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Net;
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
 
-namespace src.Controllers.Models.Entities
+namespace src.Models.Entities
 {
     public class Sale
     {
@@ -14,20 +15,19 @@ namespace src.Controllers.Models.Entities
         public required int PaymentMethodId { get; set; }
         public required int StatusId { get; set; }
         public required int AddressId { get; set; }
-        public required int UserId { get; set; } // Add this foreign key
+        public required int UserId { get; set; }
 
-        // Foreign Key Navigation Properties
         [ForeignKey("PaymentMethodId")]
-        public required PaymentMethod PaymentMethod { get; set; }
+        public PaymentMethod? PaymentMethod { get; set; }
 
         [ForeignKey("StatusId")]
-        public required Status Status { get; set; }
+        public Status? Status { get; set; }
 
         [ForeignKey("AddressId")]
-        public required Address Address { get; set; }
+        public Address? Address { get; set; }
 
-        [ForeignKey("UserId")] 
-        public Users? Users { get; set; } 
+        [ForeignKey("UserId")]
+        public Users? User { get; set; }
 
         public ICollection<SaleDetail> SaleDetails { get; set; } = new List<SaleDetail>();
     }

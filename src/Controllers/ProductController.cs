@@ -1,9 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using src.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using src.DTOs;
-using src.Controllers.Models.Entities;
+using src.Services;
 
 namespace src.Controllers
 {
@@ -11,48 +8,19 @@ namespace src.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper;
+        private readonly IProductService _productService;
 
-        // to initialize controller
-        public ProductController(ApplicationDBContext dBContext, IMapper mapper)
+        // to initialize the controller with the product service
+        public ProductController(IProductService productService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _productService = productService;
         }
 
         // to get a list of all products by user ID
         [HttpGet("user/{userId:int}")]
         public async Task<IActionResult> GetAllProductsByUser(int userId)
         {
-            var products = await dBContext.Product
-                .Include(p => p.Category)
-                .Include(p => p.Status)
-                .Where(p => p.UserId == userId)
-                .ToListAsync();
-
-            var productDtos = _mapper.Map<IEnumerable<ProductDto>>(products);
-            return Ok(productDtos);
-        }
-
-        // to search a list of all that contain a search term
-        [HttpGet("search")]
-        public async Task<IActionResult> SearchProductsByName([FromQuery] string name)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                return BadRequest("Search term is empty.");
-            }
-
-            var searchTerm = name.ToLower();
-
-            var products = await dBContext.Product
-                .Include(p => p.Category)
-                .Include(p => p.Status)
-                .Where(p => p.ProductName.ToLower().Contains(searchTerm))
-                .ToListAsync();
-
-            var productDtos = _mapper.Map<IEnumerable<ProductDto>>(products);
+            var productDtos = await _productService.GetProductsByUserAsync(userId);
             return Ok(productDtos);
         }
 
@@ -60,73 +28,44 @@ namespace src.Controllers
         [HttpGet("{id:int}", Name = "GetProductById")]
         public async Task<IActionResult> GetProductById(int id)
         {
-            var product = await dBContext.Product
-                .Include(p => p.Category)
-                .Include(p => p.Status)
-                .FirstOrDefaultAsync(p => p.ProductId == id);
-
-            if (product == null)
+            var productDto = await _productService.GetProductByIdAsync(id);
+            if (productDto == null)
             {
                 return NotFound();
             }
-
-            var productDto = _mapper.Map<ProductDto>(product);
             return Ok(productDto);
         }
 
-        // to create a new product from a DTO
+        // to create a new product
         [HttpPost]
         public async Task<IActionResult> CreateProduct([FromBody] CreateProductDto productDto)
         {
-            var product = _mapper.Map<Product>(productDto);
-
-            // to set default status
-            product.StatusId = 1; // Active
-
-            await dBContext.Product.AddAsync(product);
-            await dBContext.SaveChangesAsync();
-
-            var createdProductDto = _mapper.Map<ProductDto>(product);
-
-            return CreatedAtAction(nameof(GetProductById), new { id = product.ProductId }, createdProductDto);
+            var createdProductDto = await _productService.CreateProductAsync(productDto);
+            return CreatedAtAction(nameof(GetProductById), new { id = createdProductDto.ProductId }, createdProductDto);
         }
 
-        // to update a product from a DTO
+        // to update a product
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductDto productDto)
         {
-            var product = await dBContext.Product.FindAsync(id);
-
-            if (product == null)
+            var success = await _productService.UpdateProductAsync(id, productDto);
+            if (!success)
             {
                 return NotFound();
             }
-
-            _mapper.Map(productDto, product);
-            await dBContext.SaveChangesAsync();
-
             return NoContent();
         }
 
-        // to mark product as inactive 
+        // to delete a product
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
-            var product = await dBContext.Product.FindAsync(id);
-
-            if (product == null)
+            var success = await _productService.DeleteProductAsync(id);
+            if (!success)
             {
                 return NotFound();
             }
-
-            product.StatusId = 3; // 3 for  "Deleted" status
-
-            await dBContext.SaveChangesAsync();
-
             return NoContent();
         }
-
-
-  
     }
 }

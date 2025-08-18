@@ -1,55 +1,77 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using src.DTOs;
 using src.Data;
+using src.DTOs;
+using src.Models.Entities;
+using src.Services;
 
 namespace src.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class PaymentMethodsController : Controller
+    public class PaymentMethodsController : ControllerBase // Use ControllerBase for APIs
     {
-
         private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper;
+        private readonly IPaymentMethodService _paymentMethodService;
 
-        // to initialize controller
-        public PaymentMethodsController(ApplicationDBContext dBContext, IMapper mapper)
+        // to initialize the controller with the payment method service
+        public PaymentMethodsController(IPaymentMethodService paymentMethodService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _paymentMethodService = paymentMethodService;
         }
 
-        // to get a list of all payment methods as DTOs
+        // to get a list of all payment methods
         [HttpGet]
         public async Task<IActionResult> GetPaymentMethods()
         {
-            // to get the statuses from the database
-            var paymentMethod = await dBContext.PaymentMethod.ToListAsync();
-
-            // to map the database entities to our public DTOs
-            var paymentMethodDtos = _mapper.Map<IEnumerable<PaymentMethodDto>>(paymentMethod);
-            return Ok(paymentMethodDtos);
+            var paymentMethods = await _paymentMethodService.GetAllPaymentMethodsAsync();
+            return Ok(paymentMethods);
         }
 
-
-        // to get a single product by its id
+        // to get a single payment method by its id
         [HttpGet("{id:int}", Name = "GetPaymentMethodById")]
         public async Task<IActionResult> GetPaymentMethodById(int id)
         {
-            var paymentMethod = await dBContext.PaymentMethod
-                .FirstOrDefaultAsync(p => p.PaymentMethodId == id);
-
+            var paymentMethod = await _paymentMethodService.GetPaymentMethodByIdAsync(id);
             if (paymentMethod == null)
             {
                 return NotFound();
             }
-
-            var paymentMethodDto = _mapper.Map<PaymentMethodDto>(paymentMethod);
-            return Ok(paymentMethodDto);
+            return Ok(paymentMethod);
         }
 
+        // to create a new payment method (Admin only)
+        [HttpPost]
+        public async Task<IActionResult> CreatePaymentMethod([FromBody] CreatePaymentMethodDto paymentMethodDto)
+        {
+            var newMethod = await _paymentMethodService.CreatePaymentMethodAsync(paymentMethodDto);
+            return CreatedAtRoute("GetPaymentMethodById", new { id = newMethod.PaymentMethodId }, newMethod);
+        }
 
+        // to update a payment method (Admin only)
+        [HttpPatch("{id:int}")]
+        public async Task<IActionResult> UpdatePaymentMethod(int id, [FromBody] UpdatePaymentMethodDto paymentMethodDto)
+        {
+            var success = await _paymentMethodService.UpdatePaymentMethodAsync(id, paymentMethodDto);
+            if (!success)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+        // to delete a payment method (Admin only)
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeletePaymentMethod(int id)
+        {
+            var success = await _paymentMethodService.DeletePaymentMethodAsync(id);
+            if (!success)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
     }
 }

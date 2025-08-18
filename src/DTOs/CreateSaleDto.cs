@@ -8,9 +8,14 @@ namespace src.DTOs
         public int PaymentMethodId { get; set; }
 
         [Required]
-        public int ProductId { get; set; }
+        public int AddressId { get; set; }
+
 
         [Required]
-        public int AddressId { get; set; }
+        public int ProductId { get; set; }
+
+ 
+        [Required]
+        public int UserId { get; set; } // Add this line for testing
     }
 }

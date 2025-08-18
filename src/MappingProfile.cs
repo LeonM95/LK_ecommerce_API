@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using src.DTOs;
-using src.Controllers.Models.Entities;
+using src.Models.Entities;
 namespace src
 {
     public class MappingProfile : Profile
@@ -67,7 +67,7 @@ namespace src
             // ---
             // ShoppingCart & CartProduct Mappings
             CreateMap<ShoppingCart, ShoppingCartDto>()
-                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Users!.Fullname))
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.User!.Fullname))
                 .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Status!.StatusDescription))
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.CartProducts));
             CreateMap<CartProduct, CartProductDto>()
@@ -117,8 +117,17 @@ namespace src
             // ---
             // PaymentMethod Mappings
             CreateMap<PaymentMethod, PaymentMethodDto>();
-            CreateMap<CreatePaymentMethodDto, PaymentMethod>();
-            CreateMap<UpdatePaymentMethodDto, PaymentMethod>();
+
+            CreateMap<CreatePaymentMethodDto, PaymentMethod>()
+                .ForMember(dest => dest.MethodName,
+                           opt => opt.MapFrom(src => src.PaymentMethodName));
+
+            CreateMap<UpdatePaymentMethodDto, PaymentMethod>()
+                .ForMember(dest => dest.MethodName, opt =>
+                {
+                    opt.MapFrom(src => src.PaymentMethodName);
+                    opt.Condition(src => src.PaymentMethodName != null);
+                });
         }
     }
 }

@@ -1,10 +1,11 @@
 ﻿using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using src.DTOs;
-using src.Controllers.Models.Entities;
+using src.Models.Entities;
 using src.Data;
+using src.Services;
+using Microsoft.Extensions.Configuration.UserSecrets;
 
 
 
@@ -15,14 +16,12 @@ namespace src.Controllers
     [ApiController]
     public class ShoppingCartController : ControllerBase
     {
-        private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper;
+        private readonly IShoppingCartService _shoppingCartService;
 
 
-        public ShoppingCartController(ApplicationDBContext dBContext, IMapper mapper)
+        public ShoppingCartController(IShoppingCartService shoppingCartService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _shoppingCartService = shoppingCartService;
         }
 
 
@@ -30,102 +29,48 @@ namespace src.Controllers
         [HttpGet("{userId:int}")]
         public async Task<IActionResult> GetUserShoppingCart(int userId)
         {
-            var cart = await dBContext.ShoppingCart
-                      // list of items in Cart
-                .Include(sc => sc.Users)
-                .Include(sc => sc.Status)
-                .Include(sc => sc.CartProducts)
-                // deteails of each item
-                .ThenInclude(cp => cp.Product).
-                FirstOrDefaultAsync(sc => sc.UserId == userId);
+            var shpCartDto = await _shoppingCartService.GetCartByUserIdAsync(userId);
 
-            if (cart == null) {
+            if (shpCartDto == null)
+            {
                 return NotFound("Shopping Cart not found");
             }
 
-            var shpCartDto = _mapper.Map<ShoppingCartDto>(cart);
             return Ok(shpCartDto);
         }
 
+
         // to add a new item to a cart
         [HttpPost("items")]
-        public async Task<IActionResult> AddItemToCart([FromBody] CreateCartProductDto itemDto)
+        public async Task<IActionResult> AddItemToCart([FromBody] AddItemToCartDto itemDto)
         {
-            // to find the user's active cart by their UserId
-            var cart = await dBContext.ShoppingCart
-                .Include(sc => sc.CartProducts)
-                .FirstOrDefaultAsync(sc => sc.UserId == itemDto.UserId && sc.StatusId == 1);
+            // The userId now comes directly from the DTO
+            var updatedCart = await _shoppingCartService.AddItemToCartAsync(itemDto.UserId, itemDto);
 
-            // if the user has no active cart, create one
-            if (cart == null)
+            if (updatedCart == null)
             {
-                cart = new ShoppingCart
-                {
-                    UserId = itemDto.UserId,
-                    StatusId = 1, // Active
-                    CartAddedDate = DateTime.UtcNow
-                };
-                // Add the new cart to the context, but DON'T save yet
-                await dBContext.ShoppingCart.AddAsync(cart);
+                return BadRequest("Could not add item to cart. Check if product exists.");
             }
 
-            // to check if this product is already in the cart
-            var existingItem = cart.CartProducts
-                .FirstOrDefault(cp => cp.ProductId == itemDto.ProductId);
-
-            if (existingItem != null)
-            {
-                // if item exists, just update the quantity
-                existingItem.Quantity += itemDto.Quantity;
-            }
-            else
-            {
-                // if item is new, create it and link it to the cart object
-                var newItem = new CartProduct
-                {
-                    ProductId = itemDto.ProductId,
-                    Quantity = itemDto.Quantity,
-                    StatusId = 1, // Active
-                    AddedDate = DateTime.UtcNow,
-                    ShoppingCart = cart // This explicitly creates the link for EF Core
-                };
-                await dBContext.CartProduct.AddAsync(newItem);
-            }
-
-            // to update the timestamp
-            cart.CartUpdatedDate = DateTime.UtcNow;
-
-            // A single SaveChanges call will handle everything in one transaction
-            await dBContext.SaveChangesAsync();
-
-            return Ok();
+            return Ok(updatedCart);
         }
 
         // to update the quantity of an item in the cart
         [HttpPatch("items/{cartProductId:int}")]
         public async Task<IActionResult> UpdateCartItemQuantity(int cartProductId, [FromBody] UpdateCartProductDto updateDto)
         {
-            var cartItem = await dBContext.CartProduct.FindAsync(cartProductId);
+            if (!updateDto.Quantity.HasValue)
+            {
+                return BadRequest("Let's select an quanlty of items");
+            }
 
-            if (cartItem == null)
+            var success = await _shoppingCartService.UpdateItemQuantityAsync(cartProductId, updateDto.Quantity.Value);
+
+            if (!success)
             {
                 return NotFound("Cart item not found.");
             }
 
-            // to update the quantity from the DTO
-            if (updateDto.Quantity.HasValue)
-            {
-                cartItem.Quantity = updateDto.Quantity.Value;
-            }
-
-            // to find the parent cart and update its timestamp
-            var cart = await dBContext.ShoppingCart.FindAsync(cartItem.CartId);
-            if (cart != null)
-            {
-                cart.CartUpdatedDate = DateTime.UtcNow;
-            }
-
-            await dBContext.SaveChangesAsync();
             return NoContent();
         }
 
@@ -133,22 +78,13 @@ namespace src.Controllers
         [HttpDelete("items/{cartProductId:int}")]
         public async Task<IActionResult> RemoveItemFromCart(int cartProductId)
         {
-            var cartItem = await dBContext.CartProduct.FindAsync(cartProductId);
+            var success = await _shoppingCartService.RemoveItemFromCartAsync(cartProductId);
 
-            if (cartItem == null)
+            if (!success)
             {
                 return NotFound("Cart item not found.");
             }
 
-            // to update the parent cart's timestamp before removing the item
-            var cart = await dBContext.ShoppingCart.FindAsync(cartItem.CartId);
-            if (cart != null)
-            {
-                cart.CartUpdatedDate = DateTime.UtcNow;
-            }
-
-            dBContext.CartProduct.Remove(cartItem);
-            await dBContext.SaveChangesAsync();
             return NoContent();
         }
 

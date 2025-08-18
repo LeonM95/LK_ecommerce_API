@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace src.Controllers.Models.Entities
+namespace src.Models.Entities
 {
     public class ShoppingCart
     {
@@ -15,7 +15,7 @@ namespace src.Controllers.Models.Entities
 
         [ForeignKey("UserId")]
         [JsonIgnore]
-        public  Users? Users { get; set; }
+        public  Users? User { get; set; }
 
         [ForeignKey("StatusId")]
         [JsonIgnore]

@@ -2,19 +2,22 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using src.Data;
+using src.DTOs;
+using src.Models.Entities;
+using src.Utils;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using src.Controllers.Models.Entities;
-using src.Data;
+
 
 
 namespace src.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class AuthController : Controller
+    public class AuthController : ControllerBase
     {
         private readonly ApplicationDBContext dBContext;
         private readonly IConfiguration _config;
@@ -28,21 +31,25 @@ namespace src.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequest request)
         {
+            // to find user via email 
             var user = await dBContext.Users
                 .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == request.Email && u.Password == request.Password);
+                .FirstOrDefaultAsync(u => u.Email == request.Email);
 
-            if (user == null)
-                return Unauthorized("Credenciales inválidas");
+            if (user == null || !PasswordHasher.Verify(request.Password, user.Password))
+                return Unauthorized("Invalid Credentials");
 
             var token = GenerateToken(user);
-            return Ok(new
+            //Dto
+            var response = new LoginResponseDto
             {
-                token,
-                nombre = user.Fullname,
-                email = user.Email,
-                rol = user.Role?.RoleName ?? "client"
-            });
+                Token = token,
+                Fullname = user.Fullname,
+                Email = user.Email,
+                Role = user.Role?.RoleName ?? "client"
+            };
+
+            return Ok(response);
         }
 
 

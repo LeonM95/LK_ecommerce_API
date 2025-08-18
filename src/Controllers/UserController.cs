@@ -1,10 +1,6 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using src.DTOs;
-using src.Utils;
-using src.Controllers.Models.Entities;
-using src.Data;
+using src.Services;
 
 namespace src.Controllers
 {
@@ -12,26 +8,18 @@ namespace src.Controllers
     [ApiController]
     public class UserController : ControllerBase // use ControllerBase for APIs
     {
-        private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper; // to use AutoMapper
-
-        // to initialize controller
-        public UserController(ApplicationDBContext dBContext, IMapper mapper)
+        private readonly IUserService _userService;
+        public UserController(IUserService userService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _userService = userService;
         }
 
         // to get list of all users as DTOs
         [HttpGet]
         public async Task<IActionResult> GetUsers()
         {
-            var users = await dBContext.Users
-                .Include(u => u.Role)   // include Role for mapping RoleName
-                .Include(u => u.Status) // include Status for mapping StatusName
-                .ToListAsync();
 
-            var userDtos = _mapper.Map<IEnumerable<UserDto>>(users);
+            var userDtos = await _userService.GetAllUsersAsync();
             return Ok(userDtos);
         }
 
@@ -39,56 +27,39 @@ namespace src.Controllers
         [HttpGet("{id:int}", Name = "GetUserById")]
         public async Task<IActionResult> GetUserById(int id)
         {
-            var user = await dBContext.Users
-                .Include(u => u.Role)
-                .Include(u => u.Status)
-                .FirstOrDefaultAsync(u => u.UserId == id);
+            var userDtos = await _userService.GetUserByIdAsync(id);
 
-            if (user == null)
-            {
+            if(userDtos == null) {
                 return NotFound();
             }
 
-            var userDto = _mapper.Map<UserDto>(user);
-            return Ok(userDto);
+            return Ok(userDtos);
         }
 
         // to create a user from a DTO
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] CreateUserDto userDto)
         {
-            var user = _mapper.Map<Users>(userDto);
+            var createdUserDto = await _userService.AddUserAsync(userDto);
 
-            // to hash the password before saving (never save plain text)
+            // to check if  email already exists
+            if (createdUserDto == null)
+            {
+                return Conflict("A user with this email already exists.");
+            }
 
-            user.Password = PasswordHasher.Hash(userDto.Password!);
-
-            // to set default values on the server for security
-            user.RoleId = 2; // Default to "Vendor" or "Buyer"
-            user.StatusId = 1; // Default to "Active"
-
-            await dBContext.Users.AddAsync(user);
-            await dBContext.SaveChangesAsync();
-
-            var createdUserDto = _mapper.Map<UserDto>(user);
-
-            return CreatedAtRoute("GetUserById", new { id = user.UserId }, createdUserDto);
+            return CreatedAtAction(nameof(GetUserById), new { id = createdUserDto.UserId }, createdUserDto);
         }
 
         // to modify a user's profile data from a DTO
         [HttpPut("{id:int}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto userDto)
         {
-            var user = await dBContext.Users.FindAsync(id);
-            if (user == null)
+            var success = await _userService.UpdateUserAsync(id, userDto);
+            if (!success)
             {
                 return NotFound();
             }
-
-            // to update only the fields allowed by the DTO
-            _mapper.Map(userDto, user);
-            await dBContext.SaveChangesAsync();
-
             return NoContent();
         }
 
@@ -96,15 +67,11 @@ namespace src.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteUser(int id)
         {
-            var user = await dBContext.Users.FindAsync(id);
-            if (user == null)
+            var success = await _userService.DeleteUserAsync(id);
+            if (!success)
             {
                 return NotFound();
             }
-
-            dBContext.Users.Remove(user);
-            await dBContext.SaveChangesAsync();
-
             return NoContent();
         }
     }

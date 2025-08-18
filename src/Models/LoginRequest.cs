@@ -1,4 +1,4 @@
-﻿namespace test_LK_ecommerce.Controllers.Models
+﻿namespace src.Models
 {
     public class LoginRequest
     {
