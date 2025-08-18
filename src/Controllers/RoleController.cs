@@ -1,9 +1,10 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using src.DTOs;
-using src.Controllers.Models.Entities;
 using src.Data;
+using src.DTOs;
+using src.Models.Entities;
+using src.Services;
 
 
 namespace src.Controllers
@@ -12,94 +13,63 @@ namespace src.Controllers
     [ApiController]
     public class RoleController : ControllerBase // use ControllerBase for APIs
     {
-        private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper; // to use AutoMapper
+        private readonly IRoleService _roleService;
 
-        // to initialize controller
-        public RoleController(ApplicationDBContext dBContext, IMapper mapper)
+        // to initialize the controller with the role service
+        public RoleController(IRoleService roleService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _roleService = roleService;
         }
 
-        // to get list of all roles as DTOs
+        // to get a list of all roles
         [HttpGet]
         public async Task<IActionResult> GetRoles()
         {
-            // to get the roles from the database
-            var roles = await dBContext.Role.ToListAsync();
-
-            // to map the database entities to our public DTOs
-            var roleDtos = _mapper.Map<IEnumerable<RoleDto>>(roles);
-            return Ok(roleDtos);
+            var roles = await _roleService.GetAllRolesAsync();
+            return Ok(roles);
         }
 
         // to get a single role by its id
         [HttpGet("{id:int}", Name = "GetRoleById")]
         public async Task<IActionResult> GetRoleById(int id)
         {
-            var role = await dBContext.Role.FindAsync(id);
-
+            var role = await _roleService.GetRoleByIdAsync(id);
             if (role == null)
             {
                 return NotFound();
             }
-
-            var roleDto = _mapper.Map<RoleDto>(role);
-            return Ok(roleDto);
+            return Ok(role);
         }
 
-        // to create a new role from a DTO
+        // to create a new role
         [HttpPost]
         public async Task<IActionResult> CreateRole([FromBody] CreateRoleDto roleDto)
         {
-            // to map the incoming DTO to our internal Role entity
-            var role = _mapper.Map<Role>(roleDto);
-
-            dBContext.Role.Add(role);
-            await dBContext.SaveChangesAsync();
-
-            // to map the new entity back to a DTO to return to the client
-            var createdDto = _mapper.Map<RoleDto>(role);
-
-            // return a 201 Created status with a link to the new role
-            return CreatedAtRoute("GetRoleById", new { id = role.RoleId }, createdDto);
+            var newRole = await _roleService.CreateRoleAsync(roleDto);
+            return CreatedAtRoute("GetRoleById", new { id = newRole.RoleId }, newRole);
         }
 
-        // to update a role from a DTO
-        [HttpPut("{id:int}")]
+        // to update a role
+        [HttpPatch("{id:int}")]
         public async Task<IActionResult> UpdateRole(int id, [FromBody] UpdateRoleDto roleDto)
         {
-            var role = await dBContext.Role.FindAsync(id);
-
-            if (role == null)
+            var success = await _roleService.UpdateRoleAsync(id, roleDto);
+            if (!success)
             {
                 return NotFound();
             }
-
-            // use automapper to update the entity from the dto
-            _mapper.Map(roleDto, role);
-            await dBContext.SaveChangesAsync();
-
-            // return 204 No Content, the standard for a successful update
             return NoContent();
         }
 
-        // to delete a role by its id
+        // to delete a role
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteRole(int id)
         {
-            var role = await dBContext.Role.FindAsync(id);
-
-            if (role == null)
+            var success = await _roleService.DeleteRoleAsync(id);
+            if (!success)
             {
                 return NotFound();
             }
-
-            dBContext.Role.Remove(role);
-            await dBContext.SaveChangesAsync();
-
-            // return 204 No Content for a successful delete
             return NoContent();
         }
     }

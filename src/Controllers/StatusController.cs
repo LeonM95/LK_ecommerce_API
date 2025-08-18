@@ -1,104 +1,71 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Mvc;
 using src.DTOs;
-using src.Controllers.Models.Entities;
-using src.Data;
+using src.Services;
+using System.Threading.Tasks;
 
 namespace src.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class StatusController : ControllerBase // use ControllerBase for APIs
+    public class StatusController : ControllerBase
     {
-        private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper; // to use AutoMapper
+        private readonly IStatusService _statusService;
 
-        // to initialize controller
-        public StatusController(ApplicationDBContext dBContext, IMapper mapper)
+        // to initialize the controller with the status service
+        public StatusController(IStatusService statusService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _statusService = statusService;
         }
 
-        // to get a list of all statuses as DTOs
+        // to get a list of all statuses
         [HttpGet]
         public async Task<IActionResult> GetStatuses()
         {
-            // to get the statuses from the database
-            var statuses = await dBContext.Status.ToListAsync();
-
-            // to map the database entities to our public DTOs
-            var statusDtos = _mapper.Map<IEnumerable<StatusDto>>(statuses);
-            return Ok(statusDtos);
+            var statuses = await _statusService.GetAllStatusesAsync();
+            return Ok(statuses);
         }
 
         // to get a single status by its id
         [HttpGet("{id:int}", Name = "GetStatusById")]
         public async Task<IActionResult> GetStatusById(int id)
         {
-            var status = await dBContext.Status.FindAsync(id);
-
+            var status = await _statusService.GetStatusByIdAsync(id);
             if (status == null)
             {
                 return NotFound();
             }
-
-            var statusDto = _mapper.Map<StatusDto>(status);
-            return Ok(statusDto);
+            return Ok(status);
         }
 
-        // to create a new status from a DTO
+        // to create a new status
         [HttpPost]
         public async Task<IActionResult> CreateStatus([FromBody] CreateStatusDto statusDto)
         {
-            // to map the incoming DTO to our internal Status entity
-            var status = _mapper.Map<Status>(statusDto);
-
-            dBContext.Status.Add(status);
-            await dBContext.SaveChangesAsync();
-
-            // to map the new entity back to a DTO to return to the client
-            var createdDto = _mapper.Map<StatusDto>(status);
-
-            // return a 201 Created status with a link to the new status
-            return CreatedAtRoute("GetStatusById", new { id = status.StatusId }, createdDto);
+            var newStatus = await _statusService.CreateStatusAsync(statusDto);
+            return CreatedAtRoute("GetStatusById", new { id = newStatus.StatusId }, newStatus);
         }
 
-        // to update a status from a DTO
-        [HttpPut("{id:int}")]
+        // to update a status
+        [HttpPatch("{id:int}")]
         public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusDto statusDto)
         {
-            var status = await dBContext.Status.FindAsync(id);
-
-            if (status == null)
+            var success = await _statusService.UpdateStatusAsync(id, statusDto);
+            if (!success)
             {
                 return NotFound();
             }
-
-            // use automapper to update the entity from the dto
-            _mapper.Map(statusDto, status);
-            await dBContext.SaveChangesAsync();
-
-            // return 204 No Content, the standard for a successful update
             return NoContent();
         }
 
-        // to delete a status by its id
+        // to delete a status
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> DeleteStatus(int id)
         {
-            var status = await dBContext.Status.FindAsync(id);
-
-            if (status == null)
+            var success = await _statusService.DeleteStatusAsync(id);
+            if (!success)
             {
                 return NotFound();
             }
-
-            dBContext.Status.Remove(status);
-            await dBContext.SaveChangesAsync();
-
-            // return 204 No Content for a successful delete
             return NoContent();
         }
     }

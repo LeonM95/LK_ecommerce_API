@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace src.Controllers.Models.Entities
+namespace src.Models.Entities
 {
     public class PaymentMethod
     {

@@ -1,113 +1,76 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using src.Controllers.Models.Entities; 
-using src.Data;                       
-using src.DTOs;                       
+using src.Data;
+using src.DTOs;
+using src.Models.Entities;
+using src.Services;
 using src.Utils;
 
 namespace src.Controllers
 {
+    [Route("api/[controller]")]
+    [ApiController]
     public class ImagesController : ControllerBase
     {
-        private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper;
+        private readonly IImageService _imageService;
 
-        // to initialize controller
-        public ImagesController(ApplicationDBContext dBContext, IMapper mapper)
+        // to initialize the controller with the image service
+        public ImagesController(IImageService imageService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _imageService = imageService;
         }
 
-        // to get a list of all images bt product
+        // to get a list of all images for a product
         [HttpGet("product/{productId:int}")]
-        public async Task<IActionResult> GetAllImagesOfProduct(int productId)
+        public async Task<IActionResult> GetAllImagesForProduct(int productId)
         {
-            var images = await dBContext.Image
-                .Include(i => i.Product)
-                .Include(i => i.Status)
-                .Where(i => i.ProductId == productId)
-                .ToListAsync();
-
-            var imagesDto = _mapper.Map<IEnumerable<ImageDto>>(images);
-            return Ok(imagesDto);
+            var images = await _imageService.GetAllImagesForProductAsync(productId);
+            return Ok(images);
         }
 
-        // to get an image by Id
+        // to get an image by its Id
         [HttpGet("{imageId:int}", Name = "GetImageById")]
         public async Task<IActionResult> GetImageById(int imageId)
         {
-            var images = await dBContext.Image
-                .Include(i => i.Product)
-                .Include(i => i.Status)
-                .FirstOrDefaultAsync(i => i.ImageId == imageId);
-
-            if (images == null)
+            var image = await _imageService.GetImageByIdAsync(imageId);
+            if (image == null)
             {
                 return NotFound();
             }
-
-            var imagesDto = _mapper.Map<ImageDto>(images);
-            return Ok(imagesDto);
+            return Ok(image);
         }
 
-
-        // to create a image 
+        // to create an image
         [HttpPost]
         public async Task<IActionResult> CreateImage([FromBody] CreateImageDto imageDto)
         {
-            var image = _mapper.Map<Image>(imageDto);
-
-            // to set default status
-            image.StatusId = 1; // Active
-
-            await dBContext.Image.AddAsync(image);
-            await dBContext.SaveChangesAsync();
-
-            var createImageDto = _mapper.Map<ImageDto>(image);
-
-            return CreatedAtAction(nameof(GetImageById), new { imageId = image.ImageId }, createImageDto);
+            var newImage = await _imageService.CreateImageAsync(imageDto);
+            return CreatedAtAction(nameof(GetImageById), new { imageId = newImage.ImageId }, newImage);
         }
 
-
-
-        // to update a image from a DTO
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateImage(int id, [FromBody] UpdateImageDto imageDto)
+        // to update an image
+        [HttpPatch("{imageId:int}")]
+        public async Task<IActionResult> UpdateImage(int imageId, [FromBody] UpdateImageDto imageDto)
         {
-            var image = await dBContext.Image.FindAsync(id);
-
-            if (image == null)
+            var success = await _imageService.UpdateImageAsync(imageId, imageDto);
+            if (!success)
             {
                 return NotFound();
             }
-
-            _mapper.Map(imageDto, image);
-            await dBContext.SaveChangesAsync();
-
             return NoContent();
         }
 
-
-        // to mark a image as inactive 
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteImage(int id)
+        // to delete an image
+        [HttpDelete("{imageId:int}")]
+        public async Task<IActionResult> DeleteImage(int imageId)
         {
-            var image = await dBContext.Image.FindAsync(id);
-
-            if (image == null)
+            var success = await _imageService.DeleteImageAsync(imageId);
+            if (!success)
             {
                 return NotFound();
             }
-
-            image.StatusId = 3; // 3 for  "Deleted" status
-
-            await dBContext.SaveChangesAsync();
-
             return NoContent();
         }
-
-
     }
 }

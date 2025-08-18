@@ -2,24 +2,26 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.Json.Serialization;
 
-namespace src.Controllers.Models.Entities
+namespace src.Models.Entities
 {
     public class SaleDetail
     {
         [Key]
         public int SalesDetailsId { get; set; }
+
         public required int Quantity { get; set; }
         public required decimal UnitPrice { get; set; }
         public required decimal Subtotal { get; set; }
-        public required int SaleId { get; set; }
-        public required int ProductId { get; set; }
+
+        public int SaleId { get; set; }
+        public int ProductId { get; set; }
 
         [ForeignKey("SaleId")]
         [JsonIgnore]
-        public required Sale Sale { get; set; }
+        public Sale? Sale { get; set; }
 
         [ForeignKey("ProductId")]
         [JsonIgnore]
-        public required Product Product { get; set; }
+        public Product? Product { get; set; }
     }
 }

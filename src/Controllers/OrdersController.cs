@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using src.DTOs;
-using src.Controllers.Models.Entities;
 using src.Data;
+using src.DTOs;
+using src.Models.Entities;
+using src.Services;
+using System.Security.Claims;
 
 namespace src.Controllers
 {
@@ -12,87 +14,48 @@ namespace src.Controllers
     public class OrdersController : ControllerBase
     {
 
-        private readonly ApplicationDBContext dBContext;
-        private readonly IMapper _mapper;
+        private readonly IOrderService _orderService;
 
-
-        public OrdersController(ApplicationDBContext dBContext, IMapper mapper)
+        public OrdersController(IOrderService orderService)
         {
-            this.dBContext = dBContext;
-            _mapper = mapper;
+            _orderService = orderService;
         }
 
-
-        // to get orders of user
-        [HttpGet("user/{userId:int}")]
-        public async Task<IActionResult> GetOrdersOfUser(int userId)
+        // to get orders of the logged-in user
+        [HttpGet]
+        public async Task<IActionResult> GetMyOrders()
         {
-            var orders = await dBContext.Sale
-                // list data of DTO
-                .Include(sc => sc.Status)
-                .Include(sc => sc.PaymentMethod)
-                .Include(sc => sc.Address)
-                .Include(sc => sc.SaleDetails)
-                // include list of sale items
-                .ThenInclude(sd => sd.Product)
-                .Where(s => s.UserId == userId).ToListAsync();
-
-            if (!orders.Any())
-            {
-                return NotFound("Orders not found for this user");
-            }
-
-            var orderDto = _mapper.Map<IEnumerable<SaleDto>>(orders);
-            return Ok(orderDto);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var orders = await _orderService.GetOrdersForUserAsync(userId);
+            return Ok(orders);
         }
 
-
-        // to get orders of user
-        [HttpGet("{OrderId:int}")]
-        public async Task<IActionResult> GetOrderById(int OrderId)
+        // to get a single order by its id
+        [HttpGet("{orderId:int}", Name = "GetOrderById")]
+        public async Task<IActionResult> GetOrderById(int orderId)
         {
-            var order = await dBContext.Sale
-                // list data of DTO
-                .Include(sc => sc.Status)
-                .Include(sc => sc.PaymentMethod)
-                .Include(sc => sc.Address)
-                .Include(sc => sc.SaleDetails)
-                // include list of sale items
-                .ThenInclude(sd => sd.Product)
-                .FirstOrDefaultAsync(s => s.SaleId == OrderId);
-
+            var order = await _orderService.GetOrderByIdAsync(orderId);
             if (order == null)
             {
-                return NotFound("This order has not been found");
+                return NotFound();
             }
-
-            var orderDto = _mapper.Map<SaleDto>(order);
-            return Ok(orderDto);
+            // You might add a check here to ensure the user owns this order
+            return Ok(order);
         }
 
-
-
+        // to create a new order from the user's cart (checkout)
         [HttpPost]
         public async Task<IActionResult> CreateOrder([FromBody] CreateSaleDto orderDto)
         {
-            // to map the DTO with internal Sales entity
-            var order = _mapper.Map<Sale>(orderDto);
+            //var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var newOrder = await _orderService.CreateOrderFromCartAsync(orderDto.UserId, orderDto);
 
-            // to set default values on the server
-            order.StatusId = 4; // pending
-            order.SaleDate = DateTime.UtcNow;
-   
-            //here I have to call the function that calculates the order's amount
+            if (newOrder == null)
+            {
+                return BadRequest("Could not create order. Check cart status or product stock.");
+            }
 
-            await dBContext.Sale.AddAsync(order);
-            await dBContext.SaveChangesAsync();
-
-            var createdOrderDto = _mapper.Map<SaleDto>(order);
-
-
-            // to return a 201 Created status with a link to the new order
-            return CreatedAtRoute(
-             "GetOrdersOfUser", new { userId = order.UserId }, createdOrderDto);
+            return CreatedAtAction(nameof(GetOrderById), new { orderId = newOrder.SaleId }, newOrder);
         }
 
 

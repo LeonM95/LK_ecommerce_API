@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
-using src.Controllers.Models.Entities;
+using src.Models.Entities;
 
 namespace src.DTOs
 {
