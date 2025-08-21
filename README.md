@@ -1,4 +1,5 @@
 LK_Ecommerce API
+
 This is a complete backend API for a modern e-commerce platform, built with ASP.NET Core, Entity Framework Core, and SQL Server. The project is designed to showcase a professional, clean architecture suitable for a real-world application. It features a secure, token-based authentication system, a robust service layer for business logic, and a full suite of CRUD operations for managing products, users, orders, and more.
 
 Technology Stack
